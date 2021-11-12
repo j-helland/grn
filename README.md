@@ -11,7 +11,7 @@ Its core assumption is that resource consumption for a job can only be determine
 
 
 # Installation
-- Run `pip install -e .`
+- Run `pip install gpu-load-balancer`
 
 
 # Usage
