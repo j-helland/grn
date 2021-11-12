@@ -10,7 +10,7 @@ install_requires = [
 setup(
     name='gpu-load-balancer',
     packages=find_packages(),
-    version='0.1',
+    version='0.0.1',
     license='unlicense',
     description='GPU Load Balancer (GLB). Map N jobs to M devices on the same machine.',
     author='Jonathan Helland',
