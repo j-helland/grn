@@ -4,7 +4,7 @@ import argparse
 import glb
 
 
-@glb.gpu_load_balance()
+@glb.job()
 def gpu_job(mem: int, wait: bool = False) -> None:
     import torch
     x = torch.randn(int(mem * 8e6 // 32), device='cuda:0')

@@ -25,7 +25,7 @@ from typing import (
 log = logging.getLogger(__file__)
 
 
-__all__ = ['gpu_load_balance']
+__all__ = ['job']
 
 
 def __grpc_failed_job_handler(
@@ -133,7 +133,7 @@ def __find_gpu_master_address() -> str:
     return gpu_master_addr
 
 
-def gpu_load_balance(
+def job(
     continue_on_server_unavailable: bool = False,
 ) -> Callable:
 

@@ -3,7 +3,7 @@ import argparse
 import glb
 
 
-@glb.gpu_load_balance()
+@glb.job()
 def train_job(epochs: int, batch_size: int) -> 'tf.keras.Model':
     import tensorflow as tf
             

@@ -9,9 +9,9 @@ All that matters is that doit will run jobs in a logical ordering.
 ## File organization and notable bits
 
 - `tf_mnist_train.py` is a simple script that trains a small model on MNIST. 
-    The details are not important, only the use of the `@gpu_load_balance` decorator:
+    The details are not important, only the use of the `@glb.job` decorator:
     ```python
-    @glb.gpu_load_balance()
+    @glb.job()
     def train_job(epochs: int, batch_size: int) -> 'tf.keras.Model':
         # continued...
     ```
@@ -25,7 +25,7 @@ All that matters is that doit will run jobs in a logical ordering.
 
 - `torch_mnist_train.py` is an implementation of `tf_mnist_train.py` in PyTorch. Once again, the only thing that matters is the decorator usage:
     ```python
-    @glb.gpu_load_balance()
+    @glb.job()
     def train_job(epochs: int, batch_size: int) -> 'torch.nn.Module':   
         # continued...
     ```
