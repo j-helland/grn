@@ -1,0 +1,10 @@
+doit
+torch
+torchvision
+torchmetrics
+tensorflow
+tensorflow_datasets
+jax[cuda] 
+flax
+
+--find-links https://storage.googleapis.com/jax-releases/jax_releases.html
