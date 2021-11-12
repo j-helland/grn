@@ -25,7 +25,8 @@ import logging
 
 import grpc
 
-import glb.utils
+from glb.utils.utils import find_free_port
+from glb.utils.gpu_monitors import GPUMonitor
 import glb.grpc_resources.master_pb2 as protos
 import glb.grpc_resources.master_pb2_grpc as services
 from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCodes
@@ -270,11 +271,11 @@ def serve(debug=False):
 
     # Obtain a random free port from the OS and cache it to a secret file.
     # This file will be removed once the server shuts down.
-    port = glb.utils.find_free_port()
+    port = find_free_port()
     with open(GLB_SERVER_TMP_INFO_PATH, 'w') as glb_file:
         glb_file.write(f'{port}')
 
-    with BackgroundEventTrigger(JobStates.READY, delay=2), glb.utils.GPUMonitor(delay=0.1):
+    with BackgroundEventTrigger(JobStates.READY, delay=2), GPUMonitor(delay=0.1):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         services.add_GPUMasterServicer_to_server(GPUMasterServicer(), server)
         server.add_insecure_port(f'[::]:{port}')

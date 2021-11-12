@@ -9,7 +9,8 @@ import logging
 
 import grpc
 
-import glb.utils
+from glb.utils.utils import is_server_available
+from glb.utils.gpu_monitors import SingleGPUMonitor
 import glb.grpc_resources.master_pb2 as protos
 import glb.grpc_resources.master_pb2_grpc as services
 from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCodes
@@ -91,7 +92,7 @@ def __run_job(
     os.environ['CUDA_VISIBLE_DEVICES'] = f'{gpu_id}'
 
     # Collects job profile stats in separate thread.
-    with glb.utils.SingleGPUMonitor(gpu_id, delay=0.01) as monitor: 
+    with SingleGPUMonitor(gpu_id, delay=0.01) as monitor: 
         mem_used = None
         try:
             outputs = job_func()
@@ -170,7 +171,7 @@ def job(
 
             # If the server is unavailable, then raise exception by default.
             # Otherwise, proceed with computation without load balancing.
-            if not glb.utils.is_server_available(__GPU_MASTER_ADDR):
+            if not is_server_available(__GPU_MASTER_ADDR):
                 if not continue_on_server_unavailable:
                     raise ConnectionError('GPU Master is not available.')
                 log.warn(
