@@ -9,7 +9,7 @@ import torchmetrics
 import glb
 
 
-@glb.gpu_load_balance()
+@glb.job()
 def train_job(epochs: int, batch_size: int) -> 'torch.nn.Module': 
     def _get_loader(train=True):
         return torch.utils.data.DataLoader(

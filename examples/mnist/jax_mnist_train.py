@@ -23,7 +23,7 @@ class Model(nn.Module):
         return x
 
 
-@glb.gpu_load_balance()
+@glb.job()
 def train_job(epochs: int, batch_size: int) -> dict:
     # Force JAX to not preallocate 90% of the GPU.
     # Instead use a dynamic growth policy.

@@ -5,7 +5,7 @@ Its core assumption is that resource consumption for a job can only be determine
 
 ## Main features
 - **Minimal API** with almost no changes required to existing code. 
-  Decorate functions with `@glb.gpu_load_balance`.
+  Decorate functions with `@glb.job`.
   That's it!
 - **Naturally composable** with other workflow and job orchestration tools.
 
@@ -19,7 +19,7 @@ Decorate functions that require load balancing
 ```python
 import glb
 
-@glb.gpu_load_balance()
+@glb.job()
 def job():
     import torch
     x = torch.randn(1000, device='cuda:0')
@@ -34,7 +34,7 @@ main job.
 ```python
 import glb
 
-@glb.gpu_load_balance()
+@glb.job()
 def long_job(sleep: int):
     import torch
     import time
@@ -131,4 +131,4 @@ This means that a job type is sufficiently specified by a descriptor string of t
 ```python
 "tests/gpu_job_test.py::gpu_job"
 ```
-This descriptor string is automatically built when you use the `@gpu_load_balance` decorator.
+This descriptor string is automatically built when you use the `@glb.job` decorator.
