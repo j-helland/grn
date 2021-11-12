@@ -1,6 +1,10 @@
 .DS_store
 
+dist/
+
 __pycache__/
 .ipynb_checkpoints/
 *.egg-info
 venv/
+
+.glb.conf
