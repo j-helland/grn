@@ -10,7 +10,10 @@ message Empty { }
 
 message BoolResponse { bool response = 1; }
 
-message JobType { string jobstr = 1; }
+message JobType { 
+    string jobstr = 1; 
+    int32 resource_policy = 2;
+}
 
 message GPU {
     int32 gpu_id = 1;

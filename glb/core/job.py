@@ -9,17 +9,18 @@ import logging
 
 import grpc
 
-from glb.utils.utils import is_server_available
+from glb.utils.utils import is_server_available, find_gpu_master_address
 from glb.utils.gpu_monitors import SingleGPUMonitor
 import glb.grpc_resources.master_pb2 as protos
 import glb.grpc_resources.master_pb2_grpc as services
-from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCodes
+from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCode, ResourcePolicy
 
 from typing import (
     Callable, 
     Iterable, 
     Tuple, 
     Any,
+    Optional,
 )
 
 
@@ -63,8 +64,8 @@ def __request_gpu(
     jobtype: protos.JobType
 ) -> int:
     response: protos.GPU = stub.RequestGPU(jobtype, wait_for_ready=True)
-    errorcode = ServiceErrorCodes(response.errorcode)
-    if errorcode == ServiceErrorCodes.EXCEEDS_TOTAL_MEMORY:
+    errorcode = ServiceErrorCode(response.errorcode)
+    if errorcode == ServiceErrorCode.EXCEEDS_TOTAL_MEMORY:
         raise MemoryError(f'{errorcode}: Cannot complete job \n```\n{jobtype}```\n')
     return response.gpu_id
 
@@ -123,30 +124,40 @@ def __run_job(
     return outputs, profile
 
 
-def __find_gpu_master_address() -> str:
-    # Find the GPU Master port
-    if os.path.isfile(GLB_SERVER_TMP_INFO_PATH):
-        with open(GLB_SERVER_TMP_INFO_PATH, 'r') as glb_file:
-            gpu_master_addr = f'localhost:{glb_file.read()}'
-    # File containing current server port must exist.
-    else:
-        raise FileNotFoundError(f'{GLB_SERVER_TMP_INFO_PATH}, serve never called.')
-    return gpu_master_addr
+# def __find_gpu_master_address() -> str:
+#     # Find the GPU Master port
+#     if os.path.isfile(GLB_SERVER_TMP_INFO_PATH):
+#         with open(GLB_SERVER_TMP_INFO_PATH, 'r') as glb_file:
+#             gpu_master_addr = f'localhost:{glb_file.read()}'
+#     # File containing current server port must exist.
+#     else:
+#         raise FileNotFoundError(f'{GLB_SERVER_TMP_INFO_PATH}, serve never called.')
+#     return gpu_master_addr
 
 
 def job(
+    jobstr: Optional[str] = None,
+    resource_policy: str = 'spread',
     continue_on_server_unavailable: bool = False,
 ) -> Callable:
+    if resource_policy in {'spread', 'spreading'}:
+        __RESOURCE_POLICY = ResourcePolicy.SPREAD.value
+    elif resource_policy in {'pack', 'packing'}:
+        __RESOURCE_POLICY = ResourcePolicy.PACK.value
+    else:
+        raise ValueError(f'Got resource_policy={resource_policy}, but options are (\'spread\', \'pack\').')
 
     def load_balance(
         func: Callable,
     ) -> Callable:
         # Construct the jobstr that specifies the job type.
         func_file = inspect.getfile(func)
-        __JOBSTR = (
+        __JOBSTR = jobstr or (
             f'{func_file}::{func.__class__.__name__}' if inspect.isclass(func)
             else f'{func_file}::{func.__name__}')
-        __JOBTYPE = protos.JobType(jobstr=__JOBSTR)
+        __JOBTYPE = protos.JobType(
+            jobstr=__JOBSTR, 
+            resource_policy=__RESOURCE_POLICY)
 
         __REGISTRY = {}
         # This function is added as an attribute of the decorator at the end.
@@ -163,7 +174,7 @@ def job(
         @functools.wraps(func)
         def decorator(*args, **kwargs):
             try:
-                __GPU_MASTER_ADDR = __find_gpu_master_address()
+                __GPU_MASTER_ADDR = find_gpu_master_address()
             except FileNotFoundError as e:
                 if not continue_on_server_unavailable:
                     raise e
