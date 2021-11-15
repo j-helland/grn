@@ -1,7 +1,11 @@
 import depq
 
 from threading import Lock, Event
-from typing import Dict, List, Tuple, Union, Optional
+from typing import (
+    Dict, 
+    Union, 
+    Optional,
+)
 NumericType = Union[int, float]
 
 
@@ -24,4 +28,3 @@ class JobStates:
     ACTIVE_JOBS = dict()
     MAX_NUM_JOBS: Optional[int] = None
     LOCK = Lock()
-    READY = Event()

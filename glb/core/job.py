@@ -6,6 +6,7 @@ import functools
 import inspect
 import contextlib
 import logging
+import time
 
 import grpc
 
@@ -65,6 +66,24 @@ def __request_gpu(
 ) -> int:
     response: protos.GPU = stub.RequestGPU(jobtype, wait_for_ready=True)
     errorcode = ServiceErrorCode(response.errorcode)
+
+    # Dumb retry policy where we just keep checking over and over again
+    # for available resources. The increasing delay period helps reduce a
+    # bit of waste, but still isn't great.
+    # TODO: Would be much better to do some kind of event-driven approach where
+    #       jobs can efficiently wait until resources free up rather than wasting
+    #       cycles.
+    delay = 0.1
+    max_delay = 5.0
+    while ( (errorcode == ServiceErrorCode.EXCEEDS_CURRENT_MEMORY) or 
+            (errorcode == ServiceErrorCode.WAITING_FOR_JOB_PROFILE) ):
+
+        time.sleep(min(max_delay, delay))
+        delay *= 2
+
+        response: protos.GPU = stub.RequestGPU(jobtype, wait_for_ready=True)
+        errorcode = ServiceErrorCode(response.errorcode)
+
     if errorcode == ServiceErrorCode.EXCEEDS_TOTAL_MEMORY:
         raise MemoryError(f'{errorcode}: Cannot complete job \n```\n{jobtype}```\n')
     return response.gpu_id
