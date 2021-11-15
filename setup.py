@@ -11,12 +11,12 @@ install_requires = [
 setup(
     name='gpu-load-balancer',
     packages=find_packages(),
-    version='0.2',
+    version='0.2.1',
     license='unlicense',
     description='GPU Load Balancer (GLB). Map N jobs to M devices on the same machine.',
     author='Jonathan Helland',
     url='https://github.com/j-helland/glb',
-    download_url='https://github.com/j-helland/glb/archive/refs/tags/pre-v-0.2.tar.gz',
+    download_url='https://github.com/j-helland/glb/archive/refs/tags/pre-v-0.2.1.tar.gz',
     keywords=['GPU', 'load balancing'],
     install_requires=install_requires,
     classifiers=[
