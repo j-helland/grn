@@ -25,5 +25,4 @@ message JobProfile {
     GPU gpu = 2;
     bool succeeded = 3;
     int64 max_gpu_memory_used = 4;
-    int64 max_gpu_load = 5;
 }

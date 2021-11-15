@@ -1,6 +1,5 @@
 import os
 import sys
-# import re
 import signal
 import functools
 import inspect
@@ -11,10 +10,10 @@ import time
 import grpc
 
 from glb.utils.utils import is_server_available, find_gpu_master_address
-from glb.utils.gpu_monitors import SingleGPUMonitor
+from glb.utils.gpu_monitors import SingleGPUProcessMonitor
 import glb.grpc_resources.master_pb2 as protos
 import glb.grpc_resources.master_pb2_grpc as services
-from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCode, ResourcePolicy
+from glb.core.constants import ServiceErrorCode, ResourcePolicy
 
 from typing import (
     Callable, 
@@ -55,6 +54,7 @@ def __grpc_handle_signals(
             __grpc_failed_job_handler, 
             stub=stub, jobtype=jobtype))
     yield
+
     # Restore control to original handlers
     for s, handler in zip(sigs, orig_handlers):
         signal.signal(s, handler)
@@ -89,21 +89,6 @@ def __request_gpu(
     return response.gpu_id
 
 
-# def __parse_error_for_job_info(error: str) -> Optional[float]:
-#     # TODO: This needs to be documented better / made more robust.
-#     # String search for the amount of memory of the attempted allocation.
-#     # This memory reported by CUDA is in GiB, so we have to convert it to
-#     # MB before sending it.
-#     if re.search(r'out of memory', error):
-#         alloc = re.search(r'(Tried to allocate )(\d+.\d+)', error)
-#         if alloc is None:
-#             mem_used = float('inf')
-#         else:
-#             mem_used = float( alloc.group(2) )
-#             mem_used = int(mem_used) * 8e6  # convert to bits
-#         return mem_used
-
-
 def __run_job(
     job_func: Callable, 
     gpu_id: int, 
@@ -112,24 +97,30 @@ def __run_job(
     os.environ['CUDA_VISIBLE_DEVICES'] = f'{gpu_id}'
 
     # Collects job profile stats in separate thread.
-    with SingleGPUMonitor(gpu_id, delay=0.01) as monitor: 
+    with SingleGPUProcessMonitor(gpu_id, pid=os.getpid(), delay=0.01) as monitor: 
         mem_used = None
         try:
             outputs = job_func()
         except RuntimeError as e:
-            # mem_used = __parse_error_for_job_info(str(e))
-            # if mem_used is None:
-            #     raise e
-            print(e)
             outputs = None
             profile = protos.JobProfile(
                 jobtype=jobtype,
                 succeeded=False)
         else:
+            # if mem_used is None:
+            #     mem_used = monitor.max_mem_used
+            # else:
+            #     mem_used = max(monitor.max_mem_used, mem_used)
+            mem_used = monitor.max_mem_used
             if mem_used is None:
-                mem_used = monitor.max_mem_used
-            else:
-                mem_used = max(monitor.max_mem_used, mem_used)
+                raise SystemError(
+                    f'No usage metrics could be collected for PID {os.getpid()} '
+                    f'on GPU {gpu_id} because no such PID was ever found by NVML.'
+                    f'Make sure that you are monitoring the device ID on which this '
+                    f'process was launched.'
+                    f'\nNOTE: If you are running in a docker container, make sure to'
+                    f'use the --pid=host flag to turn off PID namespace isolation. '
+                    f'NVML uses the host PID namespace regardless of the container settings.')
 
             profile = protos.JobProfile(
                 jobtype=jobtype,
@@ -137,21 +128,9 @@ def __run_job(
                 gpu=protos.GPU(
                     gpu_id=gpu_id, 
                     errorcode=0),
-                max_gpu_memory_used=mem_used,
-                max_gpu_load=monitor.max_load)
-    
+                max_gpu_memory_used=mem_used)
+
     return outputs, profile
-
-
-# def __find_gpu_master_address() -> str:
-#     # Find the GPU Master port
-#     if os.path.isfile(GLB_SERVER_TMP_INFO_PATH):
-#         with open(GLB_SERVER_TMP_INFO_PATH, 'r') as glb_file:
-#             gpu_master_addr = f'localhost:{glb_file.read()}'
-#     # File containing current server port must exist.
-#     else:
-#         raise FileNotFoundError(f'{GLB_SERVER_TMP_INFO_PATH}, serve never called.')
-#     return gpu_master_addr
 
 
 def job(
