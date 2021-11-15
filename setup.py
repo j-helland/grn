@@ -4,6 +4,7 @@ install_requires = [
     'nvidia-ml-py3',
     'grpcio',
     'grpcio-tools',
+    'depq',
     'rich',
 ]
 

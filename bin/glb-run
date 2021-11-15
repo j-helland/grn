@@ -10,6 +10,8 @@ import logging
 
 from rich.logging import RichHandler
 
+from glb.utils.utils import find_gpu_master_address, is_server_available
+
 
 log = logging.getLogger(__file__)
 LOGGING_FORMAT = '%(message)s'
@@ -17,9 +19,10 @@ LOGGING_FORMAT = '%(message)s'
 
 def run():
     parser = ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
     parser.add_argument('cmds', type=str, nargs='+')
     args = parser.parse_args()
-
+ 
     logging.basicConfig(
         level=logging.WARNING,
         format=LOGGING_FORMAT, 
@@ -27,11 +30,26 @@ def run():
             locals_max_string=None, 
             tracebacks_word_wrap=False)])
 
-    proc = subprocess.Popen(['glb-start'])
-    time.sleep(0.5)
+    glb_cmd = ['glb-start']
+    if args.debug:
+        glb_cmd.append('--debug')
+    proc = subprocess.Popen(glb_cmd)
+
+    # Wait for the server to start.
+    # TODO: Implement a timeout?
+    while True:
+        try:
+            if not is_server_available(find_gpu_master_address()):
+                continue
+        except FileNotFoundError:
+            time.sleep(0.5)
+        else:
+            break
+
     procs = [subprocess.Popen(cmd.split(' ')) for cmd in args.cmds]
     for p in procs:
         p.wait()
+
     proc.terminate()
 
 if __name__ == '__main__':

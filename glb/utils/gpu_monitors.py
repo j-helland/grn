@@ -54,17 +54,20 @@ class GPUMonitor(Thread):
         # The lock is probably necessary here because of the sequence of appends.
         # We don't want to get interrupted by the server trying to heappop a gpu.
         with GPUStates.LOCK:
-            GPUStates.HEAP.clear()
+            gpu_list = []
             for gid in states:
                 # If there is a drop in the policy resource, trigger threads to 
                 # check again for available resources for their waiting jobs.
                 if gid in GPUStates.STATES:
-                    if GPUStates.STATES[gid][GPUStates.RESOURCE_POLICY] > states[gid][GPUStates.RESOURCE_POLICY]:
+                    if GPUStates.STATES[gid][GPUStates.TARGET_RESOURCE] > states[gid][GPUStates.TARGET_RESOURCE]:
                         JobStates.READY.set()
 
                 GPUStates.STATES[gid] = states[gid]
-                GPUStates.HEAP.append( (states[gid][GPUStates.RESOURCE_POLICY], gid) )
-            heapq.heapify(GPUStates.HEAP)
+                gpu_list.append( (gid, states[gid][GPUStates.TARGET_RESOURCE]) )
+
+            # Heapify at the end to for O(n) instead of O(n log n).
+            GPUStates.GPU_QUEUE.clear()
+            GPUStates.GPU_QUEUE.extend(gpu_list)
 
         GPUStates.STATES_INIT.set()
 
