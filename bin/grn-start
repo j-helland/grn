@@ -6,7 +6,7 @@ import logging
 from rich.console import Console
 from rich.logging import RichHandler
 
-import glb.core.gpu_master
+import grn.core.gpu_master
 
 
 log = logging.getLogger(__file__)
@@ -14,12 +14,11 @@ log = logging.getLogger(__file__)
 
 LOGGING_FORMAT = '%(message)s'
 WELCOME_STR = """
-   ____ _     ____         ____ ____  _   _           __  __           _            
-  / ___| |   | __ )   _   / ___|  _ \| | | |         |  \/  | __ _ ___| |_ ___ _ __ 
- | |  _| |   |  _ \  (_) | |  _| |_) | | | |  _____  | |\/| |/ _` / __| __/ _ \ '__|
- | |_| | |___| |_) |  _  | |_| |  __/| |_| | |_____| | |  | | (_| \__ \ ||  __/ |   
-  \____|_____|____/  (_)  \____|_|    \___/          |_|  |_|\__,_|___/\__\___|_|   
-                                                                                    
+   ____  ____   _   _        ____  ____   _   _           __  __              _              
+  / ___||  _ \ | \ | |  _   / ___||  _ \ | | | |         |  \/  |  __ _  ___ | |_  ___  _ __ 
+ | |  _ | |_) ||  \| | (_) | |  _ | |_) || | | |  _____  | |\/| | / _` |/ __|| __|/ _ \| '__|
+ | |_| ||  _ < | |\  |  _  | |_| ||  __/ | |_| | |_____| | |  | || (_| |\__ \| |_|  __/| |   
+  \____||_| \_\|_| \_| (_)  \____||_|     \___/          |_|  |_| \__,_||___/ \__|\___||_|   
 """
 WELCOME_STR_STYLE = '#B87333'
 
@@ -40,7 +39,7 @@ def start():
     console.print(WELCOME_STR, style=WELCOME_STR_STYLE)
 
     log.debug('DEBUG MODE')
-    glb.core.gpu_master.serve(debug=args.debug)
+    grn.core.gpu_master.serve(debug=args.debug)
 
 if __name__ == '__main__':
     start()

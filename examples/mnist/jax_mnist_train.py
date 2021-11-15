@@ -7,7 +7,7 @@ from flax import linen as nn
 from flax.training import train_state
 import optax
 
-import glb
+import grn
 
 
 class Model(nn.Module):
@@ -23,7 +23,7 @@ class Model(nn.Module):
         return x
 
 
-@glb.job()
+@grn.job()
 def train_job(epochs: int, batch_size: int) -> dict:
     # Force JAX to not preallocate 90% of the GPU.
     # Instead use a dynamic growth policy.

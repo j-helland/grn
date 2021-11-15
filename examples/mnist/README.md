@@ -1,6 +1,6 @@
 # MNIST Example
 
-The purpose of this example is to show how to use GLB in composition with other job orchestration tools.
+The purpose of this example is to show how to use GRN in composition with other job orchestration tools.
 The tool of choice for this demo will be [doit](https://pydoit.org/), which is a Python DAG-based workflow specification and orchestration tool.
 
 The details of doit are not important -- it's just another workflow tool.
@@ -9,9 +9,9 @@ All that matters is that doit will run jobs in a logical ordering.
 ## File organization and notable bits
 
 - `tf_mnist_train.py` is a simple script that trains a small model on MNIST. 
-    The details are not important, only the use of the `@glb.job` decorator:
+    The details are not important, only the use of the `@grn.job` decorator:
     ```python
-    @glb.job()
+    @grn.job()
     def train_job(epochs: int, batch_size: int) -> 'tf.keras.Model':
         # continued...
     ```
@@ -25,7 +25,7 @@ All that matters is that doit will run jobs in a logical ordering.
 
 - `torch_mnist_train.py` is an implementation of `tf_mnist_train.py` in PyTorch. Once again, the only thing that matters is the decorator usage:
     ```python
-    @glb.job()
+    @grn.job()
     def train_job(epochs: int, batch_size: int) -> 'torch.nn.Module':   
         # continued...
     ```
@@ -56,20 +56,21 @@ All that matters is that doit will run jobs in a logical ordering.
 There are two ways you can run this example.
 The first is the quick way, while the second requires an additional step but will provide you a better understanding of what the system is doing.
 
-1. **Quickstart:** Run `glb-run "doit -d . -f example_doit.py -n 9"`.
+1. **Quickstart:** Run `grn-run "doit -d . -f example_doit.py -n 9"`.
     This starts the load balancer automatically and then invokes a doit command that launches all 9 training jobs in parallel.
     Your terminal window will fill with spam.
 
-2. **In-depth:** Open a separate terminal session and run `glb-start`.
+2. **In-depth:** Open a separate terminal session and run `grn-start`.
     You should see something like the following:
     ```
-    $ glb-start
+    $ grn-start
 
-      ____ _     ____         ____ ____  _   _           __  __           _
-     / ___| |   | __ )   _   / ___|  _ \| | | |         |  \/  | __ _ ___| |_ ___ _ __
-    | |  _| |   |  _ \  (_) | |  _| |_) | | | |  _____  | |\/| |/ _` / __| __/ _ \ '__|
-    | |_| | |___| |_) |  _  | |_| |  __/| |_| | |_____| | |  | | (_| \__ \ ||  __/ |
-     \____|_____|____/  (_)  \____|_|    \___/          |_|  |_|\__,_|___/\__\___|_|
+      ____  ____   _   _        ____  ____   _   _           __  __              _              
+     / ___||  _ \ | \ | |  _   / ___||  _ \ | | | |         |  \/  |  __ _  ___ | |_  ___  _ __ 
+    | |  _ | |_) ||  \| | (_) | |  _ | |_) || | | |  _____  | |\/| | / _` |/ __|| __|/ _ \| '__|
+    | |_| ||  _ < | |\  |  _  | |_| ||  __/ | |_| | |_____| | |  | || (_| |\__ \| |_|  __/| |   
+     \____||_| \_\|_| \_| (_)  \____||_|     \___/          |_|  |_| \__,_||___/ \__|\___||_|   
+
 
     [11/12/21 20:16:35] INFO     Managing GPUs {0, 1, 2, 3}         gpu_monitors.py:38
     ```
@@ -86,7 +87,7 @@ The first is the quick way, while the second requires an additional step but wil
     .  7
     .  8
     ```
-    Now in your GLB terminal, `Ctrl-C` to shut down the server. 
+    Now in your GRN terminal, `Ctrl-C` to shut down the server. 
     You should see
     ```shell
     [11/12/21 20:16:37] INFO     [GPUMaster] Cleaning up...         gpu_master.py:2

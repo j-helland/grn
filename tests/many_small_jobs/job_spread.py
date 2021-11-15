@@ -1,6 +1,6 @@
-import glb
+import grn
 
-@glb.job(resource_policy='spread')
+@grn.job(resource_policy='spread')
 def job(mem: int) -> None:
     import torch
     x = torch.randn(int(mem * 8e6 // 32), device='cuda:0')

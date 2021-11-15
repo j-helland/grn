@@ -24,12 +24,12 @@ import logging
 
 import grpc
 
-from glb.utils.utils import find_free_port
-from glb.utils.gpu_monitors import GPUMonitor
-import glb.grpc_resources.master_pb2 as protos
-import glb.grpc_resources.master_pb2_grpc as services
-from glb.core.constants import GLB_SERVER_TMP_INFO_PATH, ServiceErrorCode, ResourcePolicy
-from glb.core.globals import GPUStates, JobStates
+from grn.utils.utils import find_free_port
+from grn.utils.gpu_monitors import GPUMonitor
+import grn.grpc_resources.master_pb2 as protos
+import grn.grpc_resources.master_pb2_grpc as services
+from grn.core.constants import GRN_SERVER_TMP_INFO_PATH, ServiceErrorCode, ResourcePolicy
+from grn.core.globals import GPUStates, JobStates
 
 from typing import Optional, Callable
 
@@ -182,7 +182,7 @@ def get_next_available_gpu(jobstr: str, resource_policy: ResourcePolicy) -> prot
         errorcode=errorcode.value)
 
 
-# TODO: These need to be methods in glb.core.globals
+# TODO: These need to be methods in grn.core.globals
 def update_job_state(jobstr: str, state) -> None:
     # Accumulate the max resource consumption.
     with JobStates.LOCK:
@@ -277,14 +277,14 @@ class GPUMasterServicer(services.GPUMasterServicer):
 
 def __server_shutdown_sig_handler(*args) -> None:
     log.info('[GPUMaster] Cleaning up...')
-    if os.path.exists(GLB_SERVER_TMP_INFO_PATH):
-        os.remove(GLB_SERVER_TMP_INFO_PATH)
+    if os.path.exists(GRN_SERVER_TMP_INFO_PATH):
+        os.remove(GRN_SERVER_TMP_INFO_PATH)
     sys.exit()
 
 
 def serve(debug=False, max_workers=10):
     # TODO: Implement multiple servers at once without needing separate system environments (e.g. virtual environment, docker container).
-    if os.path.isfile(GLB_SERVER_TMP_INFO_PATH):
+    if os.path.isfile(GRN_SERVER_TMP_INFO_PATH):
         raise SystemError(
             f'GPU Master is already running! Shut down current server process before launching a new one.')
 
@@ -294,8 +294,8 @@ def serve(debug=False, max_workers=10):
     # Obtain a random free port from the OS and cache it to a secret file.
     # This file will be removed once the server shuts down.
     port = find_free_port()
-    with open(GLB_SERVER_TMP_INFO_PATH, 'w') as glb_file:
-        glb_file.write(f'{port}')
+    with open(GRN_SERVER_TMP_INFO_PATH, 'w') as grn_file:
+        grn_file.write(f'{port}')
 
     with GPUMonitor(delay=0.1):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))

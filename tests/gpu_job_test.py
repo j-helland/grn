@@ -1,10 +1,10 @@
 import time
 import argparse
 
-import glb
+import grn
 
 
-@glb.job()
+@grn.job()
 def gpu_job(mem: int, wait: bool = False) -> None:
     import torch
     x = torch.randn(int(mem * 8e6 // 32), device='cuda:0')

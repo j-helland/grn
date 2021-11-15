@@ -1,9 +1,9 @@
 import argparse
 
-import glb
+import grn
 
 
-@glb.job()
+@grn.job()
 def train_job(epochs: int, batch_size: int) -> 'tf.keras.Model':
     import tensorflow as tf
             

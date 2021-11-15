@@ -6,10 +6,10 @@ import torch.optim as optim
 import torchvision as tv
 import torchmetrics
 
-import glb
+import grn
 
 
-@glb.job()
+@grn.job()
 def train_job(epochs: int, batch_size: int) -> 'torch.nn.Module': 
     def _get_loader(train=True):
         return torch.utils.data.DataLoader(

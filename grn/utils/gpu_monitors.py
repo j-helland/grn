@@ -5,7 +5,7 @@ import logging
 
 import nvidia_smi as nvml
 
-from glb.core.globals import GPUStates
+from grn.core.globals import GPUStates
 
 
 log = logging.getLogger(__file__)

@@ -2,7 +2,7 @@ import os
 
 import grpc
 
-from glb.core.constants import GLB_SERVER_TMP_INFO_PATH
+from grn.core.constants import GRN_SERVER_TMP_INFO_PATH
 
 
 __all__ = ['find_free_port', 'is_server_available']
@@ -28,10 +28,10 @@ def is_server_available(address: str = 'localhost:50051') -> bool:
 
 def find_gpu_master_address() -> str:
     # Find the GPU Master port
-    if os.path.isfile(GLB_SERVER_TMP_INFO_PATH):
-        with open(GLB_SERVER_TMP_INFO_PATH, 'r') as glb_file:
-            gpu_master_addr = f'localhost:{glb_file.read()}'
+    if os.path.isfile(GRN_SERVER_TMP_INFO_PATH):
+        with open(GRN_SERVER_TMP_INFO_PATH, 'r') as grn_file:
+            gpu_master_addr = f'localhost:{grn_file.read()}'
     # File containing current server port must exist.
     else:
-        raise FileNotFoundError(f'{GLB_SERVER_TMP_INFO_PATH}, serve never called.')
+        raise FileNotFoundError(f'{GRN_SERVER_TMP_INFO_PATH}, serve never called.')
     return gpu_master_addr

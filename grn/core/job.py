@@ -9,11 +9,11 @@ import time
 
 import grpc
 
-from glb.utils.utils import is_server_available, find_gpu_master_address
-from glb.utils.gpu_monitors import SingleGPUProcessMonitor
-import glb.grpc_resources.master_pb2 as protos
-import glb.grpc_resources.master_pb2_grpc as services
-from glb.core.constants import ServiceErrorCode, ResourcePolicy
+from grn.utils.utils import is_server_available, find_gpu_master_address
+from grn.utils.gpu_monitors import SingleGPUProcessMonitor
+import grn.grpc_resources.master_pb2 as protos
+import grn.grpc_resources.master_pb2_grpc as services
+from grn.core.constants import ServiceErrorCode, ResourcePolicy
 
 from typing import (
     Callable, 

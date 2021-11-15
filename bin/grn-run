@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-Start a GLB GPU Master, run the command, then terminate the GPU Master.
+Start a GRN GPU Master, run the command, then terminate the GPU Master.
 """
 import time
 from argparse import ArgumentParser
@@ -10,7 +10,7 @@ import logging
 
 from rich.logging import RichHandler
 
-from glb.utils.utils import find_gpu_master_address, is_server_available
+from grn.utils.utils import find_gpu_master_address, is_server_available
 
 
 log = logging.getLogger(__file__)
@@ -30,10 +30,10 @@ def run():
             locals_max_string=None, 
             tracebacks_word_wrap=False)])
 
-    glb_cmd = ['glb-start']
+    grn_cmd = ['grn-start']
     if args.debug:
-        glb_cmd.append('--debug')
-    proc = subprocess.Popen(glb_cmd)
+        grn_cmd.append('--debug')
+    proc = subprocess.Popen(grn_cmd)
 
     # Wait for the server to start.
     # TODO: Implement a timeout?
