@@ -16,7 +16,6 @@ TODO (BACKLOG):
 import sys
 import os
 import time
-import heapq
 from concurrent import futures
 import threading
 from threading import Thread
@@ -125,7 +124,6 @@ def get_next_available_gpu(jobstr: str, resource_policy: ResourcePolicy) -> prot
 
 
             # If we reached the end of the heap, there must be no devices that aren't locked.
-            # if i == len(GPUStates.HEAP):
             if gid is None:
                 errorcode = ServiceErrorCode.WAITING_FOR_JOB_PROFILE
             
@@ -214,7 +212,6 @@ class GPUMasterServicer(services.GPUMasterServicer):
         if (max_num_jobs is not None) and (max_num_jobs <= 0):
             raise ValueError('max_num_jobs must be a positive integer')
         JobStates.MAX_NUM_JOBS = max_num_jobs
-        JobStates.READY.set()
 
     def RequestGPU(self, request: protos.JobType, context) -> protos.GPU:
         """Service that client invokes to obtain GPU resources.
@@ -232,21 +229,7 @@ class GPUMasterServicer(services.GPUMasterServicer):
         resource_policy = ResourcePolicy(request.resource_policy)
         gpu = get_next_available_gpu(jobstr, resource_policy)
         
-        # If this request is within total memory limits but memory is not currently
-        # available, then we need to wait until a job completes to check again.
-        # TODO: This could result in endlessly spinning jobs.
-        #       A job queue probably makes sense so we make sure that jobs
-        #       don't get left hanging. This shold only be a problem when other
-        #       users / instances of this tool are using this machine.
         errorcode = ServiceErrorCode(gpu.errorcode)
-        while ( (errorcode == ServiceErrorCode.EXCEEDS_CURRENT_MEMORY) or  
-                (errorcode == ServiceErrorCode.WAITING_FOR_JOB_PROFILE) ):
-            log.debug(f'{errorcode}: waiting...')
-            JobStates.READY.clear()
-            JobStates.READY.wait()
-            gpu = get_next_available_gpu(jobstr, resource_policy)
-            errorcode = ServiceErrorCode(gpu.errorcode)
-
         if errorcode == ServiceErrorCode.OK:
             push_active_job(jobstr)
             log.debug(f'[RequestGPU] serving GPU ID {gpu.gpu_id}')
@@ -282,7 +265,6 @@ class GPUMasterServicer(services.GPUMasterServicer):
             del GPUStates.PROFILING_GROUP[request.gpu.gpu_id]
 
             update_job_state(jobstr, state=request.max_gpu_memory_used)
-            JobStates.READY.set()
 
         return protos.Empty()
 
@@ -315,7 +297,7 @@ def serve(debug=False, max_workers=10):
     with open(GLB_SERVER_TMP_INFO_PATH, 'w') as glb_file:
         glb_file.write(f'{port}')
 
-    with BackgroundEventTrigger(JobStates.READY, delay=2), GPUMonitor(delay=0.1):
+    with GPUMonitor(delay=0.1):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
         services.add_GPUMasterServicer_to_server(GPUMasterServicer(), server)
         server.add_insecure_port(f'[::]:{port}')
