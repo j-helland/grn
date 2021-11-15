@@ -11,7 +11,7 @@ from glb.core.globals import GPUStates
 log = logging.getLogger(__file__)
 
 
-__all__ = ['GPUMonitor', 'SingleGPUMonitor']
+__all__ = ['GPUMonitor', 'SingleGPUProcessMonitor']
 
 
 class GPUMonitor(Thread):
@@ -94,10 +94,10 @@ class GPUMonitor(Thread):
         self.stopped = True
 
 
-class SingleGPUMonitor(Thread):
+class SingleGPUProcessMonitor(Thread):
     """Separate thread for monitoring usage stats of a target GPU.
     """
-    def __init__(self, gpu_id, delay=1):
+    def __init__(self, gpu_id: int, pid: int, delay: float):
         super().__init__()
         nvml.nvmlInit()
         try:
@@ -109,23 +109,29 @@ class SingleGPUMonitor(Thread):
         self.stopped = False
         self.delay = delay
         self.gpu_id = gpu_id
+        self.pid = pid
         self.max_mem_used = 0
-        self.mem_total = 0
-        self.max_load = 0
+        # self.mem_total = 0
+        # self.max_load = 0
         self.start()
 
     def run(self):
         while not self.stopped:
+            used_memory = None
             try:
-                info = nvml.nvmlDeviceGetMemoryInfo(self.gpu_handle)
-                res = nvml.nvmlDeviceGetUtilizationRates(self.gpu_handle)
+                # info = nvml.nvmlDeviceGetMemoryInfo(self.gpu_handle)
+                # res = nvml.nvmlDeviceGetUtilizationRates(self.gpu_handle)
+                procs = nvml.nvmlDeviceGetComputeRunningProcesses(self.gpu_handle)
+                for proc in procs:
+                    if proc.pid == self.pid:
+                        used_memory = proc.usedGpuMemory
+                        break
             except nvml.NVMLError:
                 break
 
-            # Aggregate stats
-            self.max_mem_used = max(self.max_mem_used, info.used)
-            self.mem_total = max(self.mem_total, info.total)
-            self.max_load = max(self.max_load, res.gpu)
+            if used_memory is not None:
+                # Aggregate peak usage
+                self.max_mem_used = max(self.max_mem_used, used_memory)
 
             time.sleep(self.delay)
     

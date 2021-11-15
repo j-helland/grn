@@ -15,10 +15,10 @@ TODO (BACKLOG):
 """
 import sys
 import os
-import time
+# import time
 from concurrent import futures
-import threading
-from threading import Thread
+# import threading
+# from threading import Thread
 import signal
 import logging
 
@@ -40,26 +40,26 @@ log = logging.getLogger(__file__)
 __all__ = ['serve']
 
 
-class BackgroundEventTrigger(Thread):
-    """
-    """
-    def __init__(self, event: threading.Event, delay=5):
-        super().__init__()
-        self.event = event
-        self.stopped = False
-        self.delay = delay
-        self.start()
+# class BackgroundEventTrigger(Thread):
+#     """
+#     """
+#     def __init__(self, event: threading.Event, delay=5):
+#         super().__init__()
+#         self.event = event
+#         self.stopped = False
+#         self.delay = delay
+#         self.start()
 
-    def run(self):
-        while not self.stopped:
-            time.sleep(self.delay)
-            self.event.set()
+#     def run(self):
+#         while not self.stopped:
+#             time.sleep(self.delay)
+#             self.event.set()
 
-    def __enter__(self):
-        return self
+#     def __enter__(self):
+#         return self
 
-    def __exit__(self, type, value, traceback):
-        self.stopped = True
+#     def __exit__(self, type, value, traceback):
+#         self.stopped = True
 
 
 def get_next_available_gpu(jobstr: str, resource_policy: ResourcePolicy) -> protos.GPU:
