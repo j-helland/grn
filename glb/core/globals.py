@@ -1,3 +1,5 @@
+import depq
+
 from threading import Lock, Event
 from typing import Dict, List, Tuple, Union, Optional
 NumericType = Union[int, float]
@@ -10,11 +12,11 @@ class GPUStates:
     STATES: Dict[int, Dict[str, NumericType]] = dict()
     STATES_INIT = Event()
     LOCK = Lock()
-    HEAP: List[Tuple[float, int]] = []
+    GPU_QUEUE: depq.DEPQ = depq.DEPQ()
     PROFILING_GROUP: Dict[int, str] = dict()
 
     # TODO: This should probably be defined in constants.py
-    RESOURCE_POLICY: str = 'memoryUsed'
+    TARGET_RESOURCE: str = 'memoryUsed'
 
 
 class JobStates:

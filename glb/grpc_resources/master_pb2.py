@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cmaster.proto\"\x07\n\x05\x45mpty\" \n\x0c\x42oolResponse\x12\x10\n\x08response\x18\x01 \x01(\x08\"\x19\n\x07JobType\x12\x0e\n\x06jobstr\x18\x01 \x01(\t\"(\n\x03GPU\x12\x0e\n\x06gpu_id\x18\x01 \x01(\x05\x12\x11\n\terrorcode\x18\x02 \x01(\x05\"\x80\x01\n\nJobProfile\x12\x19\n\x07jobtype\x18\x01 \x01(\x0b\x32\x08.JobType\x12\x11\n\x03gpu\x18\x02 \x01(\x0b\x32\x04.GPU\x12\x11\n\tsucceeded\x18\x03 \x01(\x08\x12\x1b\n\x13max_gpu_memory_used\x18\x04 \x01(\x03\x12\x14\n\x0cmax_gpu_load\x18\x05 \x01(\x03\x32}\n\tGPUMaster\x12\x1e\n\nRequestGPU\x12\x08.JobType\x1a\x04.GPU\"\x00\x12$\n\x0b\x43ompleteJob\x12\x0b.JobProfile\x1a\x06.Empty\"\x00\x12*\n\rJobTypeExists\x12\x08.JobType\x1a\r.BoolResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0cmaster.proto\"\x07\n\x05\x45mpty\" \n\x0c\x42oolResponse\x12\x10\n\x08response\x18\x01 \x01(\x08\"2\n\x07JobType\x12\x0e\n\x06jobstr\x18\x01 \x01(\t\x12\x17\n\x0fresource_policy\x18\x02 \x01(\x05\"(\n\x03GPU\x12\x0e\n\x06gpu_id\x18\x01 \x01(\x05\x12\x11\n\terrorcode\x18\x02 \x01(\x05\"\x80\x01\n\nJobProfile\x12\x19\n\x07jobtype\x18\x01 \x01(\x0b\x32\x08.JobType\x12\x11\n\x03gpu\x18\x02 \x01(\x0b\x32\x04.GPU\x12\x11\n\tsucceeded\x18\x03 \x01(\x08\x12\x1b\n\x13max_gpu_memory_used\x18\x04 \x01(\x03\x12\x14\n\x0cmax_gpu_load\x18\x05 \x01(\x03\x32}\n\tGPUMaster\x12\x1e\n\nRequestGPU\x12\x08.JobType\x1a\x04.GPU\"\x00\x12$\n\x0b\x43ompleteJob\x12\x0b.JobProfile\x1a\x06.Empty\"\x00\x12*\n\rJobTypeExists\x12\x08.JobType\x1a\r.BoolResponse\"\x00\x62\x06proto3'
 )
 
 
@@ -97,6 +97,13 @@ _JOBTYPE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='resource_policy', full_name='JobType.resource_policy', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -110,7 +117,7 @@ _JOBTYPE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=59,
-  serialized_end=84,
+  serialized_end=109,
 )
 
 
@@ -148,8 +155,8 @@ _GPU = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=86,
-  serialized_end=126,
+  serialized_start=111,
+  serialized_end=151,
 )
 
 
@@ -208,8 +215,8 @@ _JOBPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=129,
-  serialized_end=257,
+  serialized_start=154,
+  serialized_end=282,
 )
 
 _JOBPROFILE.fields_by_name['jobtype'].message_type = _JOBTYPE
@@ -265,8 +272,8 @@ _GPUMASTER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=259,
-  serialized_end=384,
+  serialized_start=284,
+  serialized_end=409,
   methods=[
   _descriptor.MethodDescriptor(
     name='RequestGPU',
