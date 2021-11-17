@@ -35,6 +35,7 @@ def __grpc_failed_job_handler(
     stub: services.GPUMasterStub, 
     jobtype: protos.JobType
 ) -> None:
+    log.warning('[grn] Caught interrupt signal, sending failed job message to server.')
     profile = protos.JobProfile(
         jobtype=jobtype,
         succeeded=False)
@@ -198,7 +199,8 @@ def job(
                 # TODO: Using a gRPC stream should eliminate the need for this signal
                 #       handling.
                 with __grpc_handle_signals(
-                    (signal.SIGINT, signal.SIGTERM), stub, __JOBTYPE
+                    # (signal.SIGINT, signal.SIGTERM), stub, __JOBTYPE
+                    (signal.SIGINT,), stub, __JOBTYPE
                 ):
                     # Run the profile job if this is the first invocation of this job
                     # relative to the server lifetime.

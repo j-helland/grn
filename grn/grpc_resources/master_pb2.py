@@ -15,11 +15,11 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='master.proto',
-  package='',
+  package='grn',
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0cmaster.proto\"\x07\n\x05\x45mpty\" \n\x0c\x42oolResponse\x12\x10\n\x08response\x18\x01 \x01(\x08\"2\n\x07JobType\x12\x0e\n\x06jobstr\x18\x01 \x01(\t\x12\x17\n\x0fresource_policy\x18\x02 \x01(\x05\"(\n\x03GPU\x12\x0e\n\x06gpu_id\x18\x01 \x01(\x05\x12\x11\n\terrorcode\x18\x02 \x01(\x05\"j\n\nJobProfile\x12\x19\n\x07jobtype\x18\x01 \x01(\x0b\x32\x08.JobType\x12\x11\n\x03gpu\x18\x02 \x01(\x0b\x32\x04.GPU\x12\x11\n\tsucceeded\x18\x03 \x01(\x08\x12\x1b\n\x13max_gpu_memory_used\x18\x04 \x01(\x03\x32}\n\tGPUMaster\x12\x1e\n\nRequestGPU\x12\x08.JobType\x1a\x04.GPU\"\x00\x12$\n\x0b\x43ompleteJob\x12\x0b.JobProfile\x1a\x06.Empty\"\x00\x12*\n\rJobTypeExists\x12\x08.JobType\x1a\r.BoolResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0cmaster.proto\x12\x03grn\"\x07\n\x05\x45mpty\" \n\x0c\x42oolResponse\x12\x10\n\x08response\x18\x01 \x01(\x08\"2\n\x07JobType\x12\x0e\n\x06jobstr\x18\x01 \x01(\t\x12\x17\n\x0fresource_policy\x18\x02 \x01(\x05\"(\n\x03GPU\x12\x0e\n\x06gpu_id\x18\x01 \x01(\x05\x12\x11\n\terrorcode\x18\x02 \x01(\x05\"r\n\nJobProfile\x12\x1d\n\x07jobtype\x18\x01 \x01(\x0b\x32\x0c.grn.JobType\x12\x15\n\x03gpu\x18\x02 \x01(\x0b\x32\x08.grn.GPU\x12\x11\n\tsucceeded\x18\x03 \x01(\x08\x12\x1b\n\x13max_gpu_memory_used\x18\x04 \x01(\x03\x32\x95\x01\n\tGPUMaster\x12&\n\nRequestGPU\x12\x0c.grn.JobType\x1a\x08.grn.GPU\"\x00\x12,\n\x0b\x43ompleteJob\x12\x0f.grn.JobProfile\x1a\n.grn.Empty\"\x00\x12\x32\n\rJobTypeExists\x12\x0c.grn.JobType\x1a\x11.grn.BoolResponse\"\x00\x62\x06proto3'
 )
 
 
@@ -27,7 +27,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _EMPTY = _descriptor.Descriptor(
   name='Empty',
-  full_name='Empty',
+  full_name='grn.Empty',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -45,21 +45,21 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=16,
-  serialized_end=23,
+  serialized_start=21,
+  serialized_end=28,
 )
 
 
 _BOOLRESPONSE = _descriptor.Descriptor(
   name='BoolResponse',
-  full_name='BoolResponse',
+  full_name='grn.BoolResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='response', full_name='BoolResponse.response', index=0,
+      name='response', full_name='grn.BoolResponse.response', index=0,
       number=1, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -77,28 +77,28 @@ _BOOLRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=25,
-  serialized_end=57,
+  serialized_start=30,
+  serialized_end=62,
 )
 
 
 _JOBTYPE = _descriptor.Descriptor(
   name='JobType',
-  full_name='JobType',
+  full_name='grn.JobType',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='jobstr', full_name='JobType.jobstr', index=0,
+      name='jobstr', full_name='grn.JobType.jobstr', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='resource_policy', full_name='JobType.resource_policy', index=1,
+      name='resource_policy', full_name='grn.JobType.resource_policy', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -116,28 +116,28 @@ _JOBTYPE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=59,
-  serialized_end=109,
+  serialized_start=64,
+  serialized_end=114,
 )
 
 
 _GPU = _descriptor.Descriptor(
   name='GPU',
-  full_name='GPU',
+  full_name='grn.GPU',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='gpu_id', full_name='GPU.gpu_id', index=0,
+      name='gpu_id', full_name='grn.GPU.gpu_id', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='errorcode', full_name='GPU.errorcode', index=1,
+      name='errorcode', full_name='grn.GPU.errorcode', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -155,42 +155,42 @@ _GPU = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=111,
-  serialized_end=151,
+  serialized_start=116,
+  serialized_end=156,
 )
 
 
 _JOBPROFILE = _descriptor.Descriptor(
   name='JobProfile',
-  full_name='JobProfile',
+  full_name='grn.JobProfile',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='jobtype', full_name='JobProfile.jobtype', index=0,
+      name='jobtype', full_name='grn.JobProfile.jobtype', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='gpu', full_name='JobProfile.gpu', index=1,
+      name='gpu', full_name='grn.JobProfile.gpu', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='succeeded', full_name='JobProfile.succeeded', index=2,
+      name='succeeded', full_name='grn.JobProfile.succeeded', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='max_gpu_memory_used', full_name='JobProfile.max_gpu_memory_used', index=3,
+      name='max_gpu_memory_used', full_name='grn.JobProfile.max_gpu_memory_used', index=3,
       number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -208,8 +208,8 @@ _JOBPROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=153,
-  serialized_end=259,
+  serialized_start=158,
+  serialized_end=272,
 )
 
 _JOBPROFILE.fields_by_name['jobtype'].message_type = _JOBTYPE
@@ -224,35 +224,35 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
   'DESCRIPTOR' : _EMPTY,
   '__module__' : 'master_pb2'
-  # @@protoc_insertion_point(class_scope:Empty)
+  # @@protoc_insertion_point(class_scope:grn.Empty)
   })
 _sym_db.RegisterMessage(Empty)
 
 BoolResponse = _reflection.GeneratedProtocolMessageType('BoolResponse', (_message.Message,), {
   'DESCRIPTOR' : _BOOLRESPONSE,
   '__module__' : 'master_pb2'
-  # @@protoc_insertion_point(class_scope:BoolResponse)
+  # @@protoc_insertion_point(class_scope:grn.BoolResponse)
   })
 _sym_db.RegisterMessage(BoolResponse)
 
 JobType = _reflection.GeneratedProtocolMessageType('JobType', (_message.Message,), {
   'DESCRIPTOR' : _JOBTYPE,
   '__module__' : 'master_pb2'
-  # @@protoc_insertion_point(class_scope:JobType)
+  # @@protoc_insertion_point(class_scope:grn.JobType)
   })
 _sym_db.RegisterMessage(JobType)
 
 GPU = _reflection.GeneratedProtocolMessageType('GPU', (_message.Message,), {
   'DESCRIPTOR' : _GPU,
   '__module__' : 'master_pb2'
-  # @@protoc_insertion_point(class_scope:GPU)
+  # @@protoc_insertion_point(class_scope:grn.GPU)
   })
 _sym_db.RegisterMessage(GPU)
 
 JobProfile = _reflection.GeneratedProtocolMessageType('JobProfile', (_message.Message,), {
   'DESCRIPTOR' : _JOBPROFILE,
   '__module__' : 'master_pb2'
-  # @@protoc_insertion_point(class_scope:JobProfile)
+  # @@protoc_insertion_point(class_scope:grn.JobProfile)
   })
 _sym_db.RegisterMessage(JobProfile)
 
@@ -260,17 +260,17 @@ _sym_db.RegisterMessage(JobProfile)
 
 _GPUMASTER = _descriptor.ServiceDescriptor(
   name='GPUMaster',
-  full_name='GPUMaster',
+  full_name='grn.GPUMaster',
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=261,
-  serialized_end=386,
+  serialized_start=275,
+  serialized_end=424,
   methods=[
   _descriptor.MethodDescriptor(
     name='RequestGPU',
-    full_name='GPUMaster.RequestGPU',
+    full_name='grn.GPUMaster.RequestGPU',
     index=0,
     containing_service=None,
     input_type=_JOBTYPE,
@@ -280,7 +280,7 @@ _GPUMASTER = _descriptor.ServiceDescriptor(
   ),
   _descriptor.MethodDescriptor(
     name='CompleteJob',
-    full_name='GPUMaster.CompleteJob',
+    full_name='grn.GPUMaster.CompleteJob',
     index=1,
     containing_service=None,
     input_type=_JOBPROFILE,
@@ -290,7 +290,7 @@ _GPUMASTER = _descriptor.ServiceDescriptor(
   ),
   _descriptor.MethodDescriptor(
     name='JobTypeExists',
-    full_name='GPUMaster.JobTypeExists',
+    full_name='grn.GPUMaster.JobTypeExists',
     index=2,
     containing_service=None,
     input_type=_JOBTYPE,

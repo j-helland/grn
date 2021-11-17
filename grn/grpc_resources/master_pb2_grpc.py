@@ -15,17 +15,17 @@ class GPUMasterStub(object):
             channel: A grpc.Channel.
         """
         self.RequestGPU = channel.unary_unary(
-                '/GPUMaster/RequestGPU',
+                '/grn.GPUMaster/RequestGPU',
                 request_serializer=master__pb2.JobType.SerializeToString,
                 response_deserializer=master__pb2.GPU.FromString,
                 )
         self.CompleteJob = channel.unary_unary(
-                '/GPUMaster/CompleteJob',
+                '/grn.GPUMaster/CompleteJob',
                 request_serializer=master__pb2.JobProfile.SerializeToString,
                 response_deserializer=master__pb2.Empty.FromString,
                 )
         self.JobTypeExists = channel.unary_unary(
-                '/GPUMaster/JobTypeExists',
+                '/grn.GPUMaster/JobTypeExists',
                 request_serializer=master__pb2.JobType.SerializeToString,
                 response_deserializer=master__pb2.BoolResponse.FromString,
                 )
@@ -72,7 +72,7 @@ def add_GPUMasterServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'GPUMaster', rpc_method_handlers)
+            'grn.GPUMaster', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -91,7 +91,7 @@ class GPUMaster(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/GPUMaster/RequestGPU',
+        return grpc.experimental.unary_unary(request, target, '/grn.GPUMaster/RequestGPU',
             master__pb2.JobType.SerializeToString,
             master__pb2.GPU.FromString,
             options, channel_credentials,
@@ -108,7 +108,7 @@ class GPUMaster(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/GPUMaster/CompleteJob',
+        return grpc.experimental.unary_unary(request, target, '/grn.GPUMaster/CompleteJob',
             master__pb2.JobProfile.SerializeToString,
             master__pb2.Empty.FromString,
             options, channel_credentials,
@@ -125,7 +125,7 @@ class GPUMaster(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/GPUMaster/JobTypeExists',
+        return grpc.experimental.unary_unary(request, target, '/grn.GPUMaster/JobTypeExists',
             master__pb2.JobType.SerializeToString,
             master__pb2.BoolResponse.FromString,
             options, channel_credentials,

@@ -133,7 +133,7 @@ def get_next_available_gpu(jobstr: str, resource_policy: ResourcePolicy) -> prot
                 # NOTE: Single python dict op should be inherently thread-safe.
                 requested_memory = JobStates.JOB_TYPES.get(jobstr)
 
-                log.debug(f'{mem_free}, {mem_total}, {requested_memory}')
+                log.debug(f'[get_next_available_gpu] (total) {mem_total}, (free) {mem_free}, (request) {requested_memory}')
 
                 errorcode = ServiceErrorCode.OK
                 if requested_memory is not None:
