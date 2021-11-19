@@ -1,6 +1,6 @@
 # GPU Resource Negotiator (GRN)
 
-GRN is a tool for evenly distributing N-many jobs across M-many GPUs on a single machine.
+GRN is a tool for dispatching N-many jobs onto M-many GPUs on a single machine, with support for multiple jobs on a single GPU.
 Its core assumption is that resource consumption for a job can only be determined at runtime.
 
 ## Main features
@@ -8,11 +8,19 @@ Its core assumption is that resource consumption for a job can only be determine
   Decorate functions with `@grn.job`.
   That's it!
 - **Naturally composable** with other workflow and job orchestration tools.
+- **Framework agnostic:** PyTorch, Tensorflow, JAX -- use whatever!
+
+## Limitations
+- Only NVIDIA GPUs are currently supported.
+- Multi-GPU jobs (e.g. PyTorch's [`DistributedDataParallel`](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)) are not currently supported.
 
 
 # Examples
 Working examples are maintained in the `examples/` directory if you want to jump straight in.
 Consider starting with `examples/mnist`, which will give you a sense for how GRN can naturally compose with other workflow and job orchestration tools.
+
+Table of Contents:
+- [Pydoit example](examples/mnist/): coordinate the simultaneous training of MNIST models in PyTorch, Tensorflow, and JAX.
 
 
 # Installation
@@ -20,22 +28,94 @@ Consider starting with `examples/mnist`, which will give you a sense for how GRN
 
 
 # Usage
-Decorate functions that require load balancing
+## **Combined server/client invocation**
+The simplest way to use GRN is via the `grn-run` command, which is automatically added to your path on installation.
+This approach requires no code changes.
+
+Suppose you have a simple GPU script
+```python
+import argparse
+
+def job(wait):
+    import time
+    import torch
+    x = torch.randn(1024, device='cuda:0')
+
+    if wait:
+        time.sleep(wait)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--wait', type=float, default=None)
+    args = parser.parse_args()
+
+    job(args.wait)
+```
+
+In your terminal,
+```shell
+$ grn-run \
+  "python job.py" \
+  "python job.py" \
+  "python job.py" \
+  "python job.py --wait 5.0"
+```
+Under the hood, this is what happens:
+1. `grn-start` is invoked to start the GPU Master.
+2. Each `python job.py` instance requests GPU resources from GRN. 
+    - One instance of each job type is allowed to run.
+      There are two distinct jobs: `python job.py` and `python job.py --wait 5.0`, so two jobs will run simultaneously and send resource profiles to the GPU Master once they complete. 
+    - The remaining two instances of `python job.py` are blocked until a resource profile for their job type is sent to the GPU Master.
+      Once the profile is available, the GPU Master will distribute both jobs across GPUs according to the default resource policy `'spread'`, which evenly balances the GPUs.
+3. Once all jobs complete, the GPU Master shuts down.
+
+By default, GRN will manage all available GPUs on the machine.
+You can restrict this using `CUDA_VISIBLE_DEVICES` e.g. `CUDA_VISIBLE_DEVICES=0,1 grn-run ...` to restrict GRN to only use the first two GPUs.
+
+## **Separate server/client invocation**
+The other way to use GRN is by launching the GPU Master as a standalone process.
+This approach requires some small code changes, but gives you full control over the following:
+- Which jobs have a particular job type. 
+- The resource policy for each job type. You can spread out big jobs across GPUs while concentrating small jobs together.
+- How your jobs are profiled. You can define quick auxiliary functions that will be used to profile resource requirements.
+- The lifetime of the GPU Master. This means that job type profiles can be maintained beyond a single batch of jobs.
+
+Currently, the way to hook up GPU jobs to GRN is with the `@grn.job` decorator.
+
+**WARNING:** Do not use `grn-run` on scripts that use the `@grn.job` decorator.
+
+`./job.py`:
 ```python
 import grn
 
 @grn.job()
 def job():
     import torch
-    x = torch.randn(1000, device='cuda:0')
+    x = torch.randn(1024, device='cuda:0')
 
 if __name__ == '__main__':
     job()
 ```
 
+### **Job types**
+The job type in the example above will be automatically derived as `job.py::job` -- a combination of the function name and the file in which it is declared.
+You can instead specify your own job type via `@grn.job(jobstr='my job type')`.
+
+### **Resource policies**
+You can control which resource allocation policy is used at a job-by-job level.
+Currently, the two policies available are
+1. `'spread'`: Allocate this job type to the GPU with the most resources available at request time.
+2. `'pack'`: Allocate this job type to the GPU with the least amount of resources that can still satisfy its resource requirements at request time.
+  NOTE: This does not necessarily mean that all jobs with the `'pack'` policy will cluster together on the same device(s).
+
+You can specify the policy via e.g. `@grn.job(resource_policy='pack')`.
+
+The default policy is `'spread'`.
+
+### **Custom profiling**
 If you have a long-running job that is not suitable for quick profiling, you may optionally define a lighter-weight version that will be profiled instead.
-It is on you to ensure that this lightweight version is an accurate reflection of the
-main job.
+It is an exercise for the reader to ensure that this lightweight version is an accurate reflection of the main job.
 ```python
 import grn
 
@@ -43,14 +123,14 @@ import grn
 def long_job(sleep: int):
     import torch
     import time
-    x = torch.randn(1000, device='cuda:0')
+    x = torch.randn(1024, device='cuda:0')
     time.sleep(sleep)
 
 @long_job.profile
 def short_job(*args):
     import torch
     import time
-    x = torch.randn(1000, device='cuda:0')
+    x = torch.randn(1024, device='cuda:0')
 
 if __name__ == '__main__':
     # short_job will run first to gather the resource profile.
@@ -59,36 +139,27 @@ if __name__ == '__main__':
     long_job(10)
 ```
 
-## **Combined server/client invocation**
-In your terminal, run.
-```shell
-$ grn-run "python job.py"
-```
-This command simply runs `grn-start` and then runs the command `python job.py` in sequence.
-You can pass multiple commands if you want.
-```shell
-$ grn-run "python job.py" "python job.py"
-```
-
-## **Separate server/client invocation**
-You can instead run the server by invoking in a separate terminal
+### **Launching the GPU Master**
+Launch the server in a separate terminal in the same localhost network:
 ```shell
 $ grn-start
 
-  ____  ____   _   _        ____  ____   _   _           __  __              _              
- / ___||  _ \ | \ | |  _   / ___||  _ \ | | | |         |  \/  |  __ _  ___ | |_  ___  _ __ 
-| |  _ | |_) ||  \| | (_) | |  _ | |_) || | | |  _____  | |\/| | / _` |/ __|| __|/ _ \| '__|
-| |_| ||  _ < | |\  |  _  | |_| ||  __/ | |_| | |_____| | |  | || (_| |\__ \| |_|  __/| |   
- \____||_| \_\|_| \_| (_)  \____||_|     \___/          |_|  |_| \__,_||___/ \__|\___||_|   
-
+   ____ _     ____         ____ ____  _   _           __  __           _
+  / ___| |   | __ )   _   / ___|  _ \| | | |         |  \/  | __ _ ___| |_ ___ _ __
+ | |  _| |   |  _ \  (_) | |  _| |_) | | | |  _____  | |\/| |/ _` / __| __/ _ \ '__|
+ | |_| | |___| |_) |  _  | |_| |  __/| |_| | |_____| | |  | | (_| \__ \ ||  __/ |
+  \____|_____|____/  (_)  \____|_|    \___/          |_|  |_|\__,_|___/\__\___|_|
 
 [11/12/21 20:16:35] INFO     Managing GPUs {0, 1, 2, 3}         gpu_monitors.py:38
 ```
-and then in the original terminal
+and then in your original terminal
 ```shell
 $ python job.py
 ```
-Note that no `CUDA_VISIBLE_DEVICES` flag was used here.
+which will automatically send a request to the server for resources.
+
+### **Restricting devices**
+Note that no `CUDA_VISIBLE_DEVICES` flag was used in the example above.
 If you want to restrict the possible GPUs that your job can run on, simply launch the server with a restricted range
 ```shell
 $ CUDA_VISIBLE_DEVICES=0,1 grn-start
@@ -102,7 +173,7 @@ $ CUDA_VISIBLE_DEVICES=0,1 grn-start
 
 [11/12/21 20:16:35] INFO     Managing GPUs {0, 1}               gpu_monitors.py:38
 ```
-The load balancer will do the rest of the work to make sure that `job.py` will only run on a GPU in the set `{0, 1}`.
+GRN will do the rest of the work to make sure that `job.py` will only run on a GPU in the set `{0, 1}`.
 
 
 ## Use with Docker

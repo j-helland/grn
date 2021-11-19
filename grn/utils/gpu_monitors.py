@@ -1,5 +1,6 @@
 import os
 import time
+import psutil
 from threading import Thread
 import logging
 
@@ -109,27 +110,24 @@ class SingleGPUProcessMonitor(Thread):
         self.stopped = False
         self.delay = delay
         self.gpu_id = gpu_id
-        self.pid = pid
+        self.proc = psutil.Process(pid)
         self.max_mem_used = 0
-        # self.mem_total = 0
-        # self.max_load = 0
+        self.daemon = True
         self.start()
 
     def run(self):
         while not self.stopped:
-            used_memory = None
+            used_memory = 0
+            target_procs = {p.pid: p for p in self.proc.children(recursive=True)}
+            target_procs[self.proc.pid] = self.proc
             try:
-                # info = nvml.nvmlDeviceGetMemoryInfo(self.gpu_handle)
-                # res = nvml.nvmlDeviceGetUtilizationRates(self.gpu_handle)
-                procs = nvml.nvmlDeviceGetComputeRunningProcesses(self.gpu_handle)
-                for proc in procs:
-                    if proc.pid == self.pid:
-                        used_memory = proc.usedGpuMemory
-                        break
+                for proc in nvml.nvmlDeviceGetComputeRunningProcesses(self.gpu_handle):
+                    if proc.pid in target_procs:
+                        used_memory += proc.usedGpuMemory
             except nvml.NVMLError:
                 break
 
-            if used_memory is not None:
+            if used_memory > 0:
                 # Aggregate peak usage
                 self.max_mem_used = max(self.max_mem_used, used_memory)
 

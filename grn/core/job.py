@@ -97,7 +97,8 @@ def __run_job(
 ) -> Tuple[Any, protos.JobProfile]:
     os.environ['CUDA_VISIBLE_DEVICES'] = f'{gpu_id}'
 
-    # Collects job profile stats in separate thread.
+    # Collects job profile in a separate thread.
+    # Default sampling rate is once per 10 milliseconds.
     with SingleGPUProcessMonitor(gpu_id, pid=os.getpid(), delay=0.01) as monitor: 
         mem_used = None
         try:
@@ -108,18 +109,13 @@ def __run_job(
                 jobtype=jobtype,
                 succeeded=False)
         else:
-            # if mem_used is None:
-            #     mem_used = monitor.max_mem_used
-            # else:
-            #     mem_used = max(monitor.max_mem_used, mem_used)
             mem_used = monitor.max_mem_used
-            if mem_used is None:
+            if mem_used == 0:
                 raise SystemError(
-                    f'No usage metrics could be collected for PID {os.getpid()} '
-                    f'on GPU {gpu_id} because no such PID was ever found by NVML.'
-                    f'Make sure that you are monitoring the device ID on which this '
-                    f'process was launched.'
-                    f'\nNOTE: If you are running in a docker container, make sure to'
+                    f'No usage metrics could be collected for PID {os.getpid()} for job '
+                    f'\'{jobtype.jobstr}\' on GPU {gpu_id} because no such PID was ever '
+                    f'found by NVML. Does this job actually use the GPU?'
+                    f'\nHINT: If you are running in a docker container, make sure to'
                     f'use the --pid=host flag to turn off PID namespace isolation. '
                     f'NVML uses the host PID namespace regardless of the container settings.')
 
@@ -198,10 +194,7 @@ def job(
                 # We need to communicate abnormal process termination to the server.
                 # TODO: Using a gRPC stream should eliminate the need for this signal
                 #       handling.
-                with __grpc_handle_signals(
-                    # (signal.SIGINT, signal.SIGTERM), stub, __JOBTYPE
-                    (signal.SIGINT,), stub, __JOBTYPE
-                ):
+                with __grpc_handle_signals((signal.SIGINT,), stub, __JOBTYPE):
                     # Run the profile job if this is the first invocation of this job
                     # relative to the server lifetime.
                     # If no profiler was registered, then run the full job as the profile
@@ -212,10 +205,14 @@ def job(
                             (lambda: __REGISTRY['profiler'](*args, **kwargs)), 
                             (lambda: func(*args, **kwargs)))
                         gpu_id = __request_gpu(stub, __JOBTYPE)
-                        outputs, profile = __run_job(
-                            job_func=job_func,
-                            gpu_id=gpu_id, 
-                            jobtype=__JOBTYPE)
+                        try:
+                            outputs, profile = __run_job(
+                                job_func=job_func,
+                                gpu_id=gpu_id, 
+                                jobtype=__JOBTYPE)
+                        except SystemError as e:
+                            print(e)
+                            __grpc_failed_job_handler(stub=stub, jobtype=__JOBTYPE)
                         stub.CompleteJob(profile)
 
                     # If a profiler was registered, now run the actual job and 
@@ -230,10 +227,14 @@ def job(
                             (__REGISTRY.get('profiler') is not None))
                     ):
                         gpu_id = __request_gpu(stub, __JOBTYPE)
-                        outputs, profile = __run_job(
-                            job_func=(lambda: func(*args, **kwargs)),
-                            gpu_id=gpu_id,
-                            jobtype=__JOBTYPE)
+                        try:
+                            outputs, profile = __run_job(
+                                job_func=(lambda: func(*args, **kwargs)),
+                                gpu_id=gpu_id,
+                                jobtype=__JOBTYPE)
+                        except SystemError as e:
+                            print(e)
+                            __grpc_failed_job_handler(stub=stub, jobtype=__JOBTYPE)
                         stub.CompleteJob(profile)
 
             return outputs

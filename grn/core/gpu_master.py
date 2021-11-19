@@ -1,24 +1,11 @@
 """
 TODO:
 [ ] Implement segmented heap to handle heterogeneous hardware resources.
-
-TODO (BACKLOG):
-[ ] Handle many connections. 
-    Probably want to put the server into some kind of not ready state.
-    Can possibly implement this behavior using gRPC service intercept handler.
-[ ] NEED to write tests to identify bugs in my shitty multithreading code.
-[ ] Graceful handling of endlessly spinning jobs. Possibly implement a timeout?
-[ ] Continuous job profiling might be useful as a way to gracefully handle interruptions / failures.
-    That way, there doesn't need to be special logic in the client to send a message when abnormal
-    termination happens.
-    Implement this using a gRPC stream.
+[ ] Handle devices from vendors beyond just NVIDIA.
 """
 import sys
 import os
-# import time
 from concurrent import futures
-# import threading
-# from threading import Thread
 import signal
 import logging
 
@@ -38,28 +25,6 @@ log = logging.getLogger(__file__)
 
 
 __all__ = ['serve']
-
-
-# class BackgroundEventTrigger(Thread):
-#     """
-#     """
-#     def __init__(self, event: threading.Event, delay=5):
-#         super().__init__()
-#         self.event = event
-#         self.stopped = False
-#         self.delay = delay
-#         self.start()
-
-#     def run(self):
-#         while not self.stopped:
-#             time.sleep(self.delay)
-#             self.event.set()
-
-#     def __enter__(self):
-#         return self
-
-#     def __exit__(self, type, value, traceback):
-#         self.stopped = True
 
 
 def get_next_available_gpu(jobstr: str, resource_policy: ResourcePolicy) -> protos.GPU:
@@ -247,11 +212,8 @@ class GPUMasterServicer(services.GPUMasterServicer):
         #       should be okay.
         is_new_job_type = (JobStates.JOB_TYPES.get(jobstr) is None)
 
-        # # FIXME: There is a problem where the SingleGPUMonitor will report the full
-        # #        GPU usage across all jobs, which can lead to incorrect estimates of
-        # #        resource consumption for job types.
-        # #        As such, do not update job state continuously.
-        # #        This means we have to rely on accurate profiling of the first job.
+        # # TODO: With the new single process client-side monitoring, we should be able to
+        # #       re-enable continuous monitoring.
         # if request.succeeded:
         #     update_job_state(jobstr, state=request.max_gpu_memory_used)
         pop_active_job(jobstr)
